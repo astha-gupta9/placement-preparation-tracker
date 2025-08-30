@@ -33,3 +33,8 @@ A **full-stack web application** to track placement preparation progress. Built 
     │    └── vite.config.js
     ├── README.md
     └── .gitignore
+
+## Progress Log
+
+- **Day 1**: Setup MERN boilerplate (backend server, MongoDB Atlas connection, React App initialized)
+- **Day 2**: Added User model, basic auth routes setup.
