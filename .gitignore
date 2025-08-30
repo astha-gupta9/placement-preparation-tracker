@@ -1,0 +1,16 @@
+# Node
+node_modules
+npm-deug.log*
+yarn.lock
+
+# Envs
+backend/.env
+frontend/.env
+
+# Builds
+dist
+build
+
+# OS / Editorr
+.DS_Store
+.vscode
