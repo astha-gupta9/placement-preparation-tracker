@@ -39,3 +39,4 @@ A **full-stack web application** to track placement preparation progress. Built 
 - **Day 1**: Setup MERN boilerplate (backend server, MongoDB Atlas connection, React App initialized)
 - **Day 2**: Added User model, basic auth routes setup.
 - **Day 3**: Implemented secure authentication (bcrypt password hashing, JWT token generation, protected route)
+- **Day 4**: Designed Problem model, implemented CRUD APIs with JWT protection, tested using Thunder Client (VS Code extension).
