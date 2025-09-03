@@ -40,3 +40,5 @@ A **full-stack web application** to track placement preparation progress. Built 
 - **Day 2**: Added User model, basic auth routes setup.
 - **Day 3**: Implemented secure authentication (bcrypt password hashing, JWT token generation, protected route)
 - **Day 4**: Designed Problem model, implemented CRUD APIs with JWT protection, tested using Thunder Client (VS Code extension).
+- **Day 5**: Implemented Problem model, CRUD routes, controllers
+- **Day 6**: Added Problem stats API, error handling improvements, middleware refactor

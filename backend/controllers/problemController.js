@@ -1,66 +1,174 @@
+const mongoose = require("mongoose");
 const Problem = require("../models/problem");
+const ErrorResponse = require("../utils/errorResponse");
 
 // Create problem
-const createProblem = async (req, res) => {
+const createProblem = async (req, res, next) => {
     try {
-        const { title, difficulty, tags, status, user } = req.body;
+        const { title, difficulty, tags, status } = req.body;
 
-        const problem = new Problem({
+        const problem = await Problem.create({
             title,
             difficulty,
             tags,
             status,
-            user
+            user: req.user._id     // from JWT
         });
 
-        await problem.save();
-        return res.status(201).json({ message: "Problem created successfully", problem });
+        return res.status(201).json({
+            success: true,
+            message: "Problem created successfully",
+            problem
+        });
     } catch (err) {
-        return res.status(500).json({ message: "Error creating problem", err: err.message });
+        next(err);
     }
 };
 
 // Get all problems of a user
-const getProblems = async (req, res) => {
+const getProblems = async (req, res, next) => {
     try {
-        const problems = await Problem.find({ user: req.user.id });
-        res.json(problems);
+        const { difficulty, status, tags, search, page = 1, limit = 10, sort } = req.query;
+
+        let query = { user: req.user._id };
+
+        // Filter on problems
+        if (difficulty) query.difficulty = difficulty;
+        if (status) query.status = status;
+        if (tags) query.tags = { $in: tags.split(",") };
+
+        // Searching a problem
+        if (search) {
+            query.title = { $regex: search, $options: "i" };
+        }
+
+        // Pagination
+        const pageNumber = Number(page);
+        const pageSize = Number(limit);
+
+        // Sorting
+        let sortOptions = { createdAt: -1 };
+        if (sort) {
+            const [field, order] = sort.spilt(":");
+            sortOptions = { [field]: order === "asc" ? 1 : -1 };
+        }
+
+        const total = await Problem.countDocuments(query);
+
+        const problems = await Problem.find(query)
+            .sort(sortOptions)
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize);
+        
+        return res.status(200).json({
+            success: true,
+            count: problems.length,
+            total,
+            page: pageNumber,
+            pages: Math.ceil(total / pageSize),
+            problems
+        });
     } catch (err) {
-        res.status(500).json({ message: "Error fetching problems", err });
+        next(err);
     }
 };
 
 // Update problem
-const updateProblem = async (req, res) => {
+const updateProblem = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const problem = await Problem.findOneAndUpdate(
-            { _id: id, user: req.user.id},
+        
+        const updated = await Problem.findOneAndUpdate(
+            { _id: id, user: req.user.id },
             req.body,
-            { new: true }
+            { new: true, runValidators: true }
         );
 
-        if (!problem) return res.status(404).json({ message: "Problem not found" });
-        res.json(problem);
+        if (!updated) {
+            return next(new ErrorResponse("Problem not found", 404));
+        }
+        
+        return res.status(200).json({
+            success: true,
+            message: "Problem updated",
+            problem: updated
+        });
     } catch (err) {
-        res.status(500).json({ message: "Error updating problem", err });
+        next(err);
     }
 };
 
 // Delete problem
-const deleteProblem = async (req, res) => {
+const deleteProblem = async (req, res, next) => {
     try {
         const { id } = req.params;
-        const problem = await Problem.findOneAndDelete({
+        
+        const deleted = await Problem.findOneAndDelete({
             _id: id,
-            user: req.user.id
+            user: req.user._id
         });
 
-        if (!problem) return res.status(404).json({ message: "Problem not found" });
-        res.json({ message: "Problem deleted successfully" });
+        if (!deleted) {
+            return next(new ErrorResponse("Problem not found", 404));
+        }
+        
+        return res.status(200).json({ 
+            success: true,
+            message: "Problem deleted successfully" 
+        });
     } catch (err) {
-        res.status(500).json({ message: "Error deleting problem", err });
+        next(err);
     }
 };
 
-module.exports = { createProblem, getProblems, updateProblem, deleteProblem };
+const getProblemStats = async (req, res, next) => {
+    try {
+        const userId = new mongoose.Types.ObjectId(req.user._id);
+
+        const byDifficultyRaw = await Problem.aggregate([
+            { $match: { user: userId } },
+            {
+                $group: {
+                    _id: { difficulty: "$difficulty", status: "$status" },
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const byDifficulty = {};
+        byDifficultyRaw.forEach(item => {
+            const { difficulty, status } = item._id;
+            if (!byDifficulty[difficulty]) {
+                byDifficulty[difficulty] = { "Solved": 0, "In Progress": 0, "Not Started": 0 };
+            }
+            byDifficulty[difficulty][status] = item.count;
+        });
+
+        const byStatusRaw = await Problem.aggregate([
+            { $match: { user: userId } },
+            {
+                $group: {
+                    _id: "$status",
+                    count: { $sum: 1 }
+                }
+            }
+        ]);
+
+        const byStatus = {};
+        byStatusRaw.forEach(item => {
+            byStatus[item._id] = item.count;
+        });
+
+        return res.status(200).json({
+            success: true,
+            stats: {
+                byDifficulty,
+                byStatus
+            }
+        });
+    } catch (err) {
+        next(err);
+    }
+};
+
+module.exports = { createProblem, getProblems, updateProblem, deleteProblem, getProblemStats };

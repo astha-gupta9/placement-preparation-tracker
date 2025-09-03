@@ -3,18 +3,18 @@ const mongoose = require("mongoose");
 const problemSchema = new mongoose.Schema({
     title: {
         type: String,
-        required: true
+        required: [true, "Please add a title"],
+        trim: true
     },
     difficulty: {
         type: String,
         enum: ["Easy", "Medium", "Hard"],
-        required: true
+        required: [true, "Please add difficulty"]
     },
-    tags: [
-        { 
-            type: String 
-        }
-    ],
+    tags: { 
+        type: [String],
+        default: []
+    },
     status: {
         type: String,
         enum: ["Not Started", "In Progress", "Solved"],
@@ -24,11 +24,9 @@ const problemSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now
     }
-});
+},
+{ timestamps: true }
+);
 
 module.exports = mongoose.model("Problem", problemSchema);

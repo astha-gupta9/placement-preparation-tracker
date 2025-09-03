@@ -1,19 +1,26 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const cors = require("cors");
 require("dotenv").config();
-const problemRoutes = require("./routes/problemRoutes");
 
 const app = express();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const cors = require("cors");
 app.use(cors());
+
+const problemRoutes = require("./routes/problemRoutes");
 app.use("/api/problems", problemRoutes);
 
-const authRoutes = require("./routes/auth");
+const authRoutes = require("./routes/authRoutes");
 app.use("/api/auth", authRoutes);
 
 const userRoutes = require("./routes/userRoutes");
 app.use("/api/users", userRoutes);
+
+const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
+app.use(notFound);
+app.use(errorHandler);
 
 mongoose
     .connect(process.env.MONGO_URI)
