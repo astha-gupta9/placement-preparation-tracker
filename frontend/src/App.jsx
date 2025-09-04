@@ -1,21 +1,30 @@
-import { useEffect, useState } from 'react';
-import axios from "axios";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Register from "./pages/Register";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import PrivateRoute from "./components/PrivateRoute";
+import Navbar from "./components/Navbar";
+import Problems from "./pages/Problems";
 
 function App() {
-  const [msg, setMsg] = useState("Loading...");
-
-  useEffect(() => {
-    axios
-      .get("http://localhost:5000/")
-      .then(res => setMsg(res.data))
-      .catch(() => setMsg("could not reach backend"));
-  }, []);
+  // return (
+  //   <Router>
+  //     <Navbar />
+  //     <Routes>
+  //       <Route path="/" element={<PrivateRoute> <Dashboard /> </PrivateRoute>} />
+  //       <Route path="/problems" element={<PrivateRoute><Problems /></PrivateRoute>} />
+  //       <Route path="/login" element={<Login />} />
+  //       <Route path="/register" element={<Register />} />
+  //     </Routes>
+  //   </Router>
+  // );
 
   return (
-    <main style={{ fontFamily: "system-ui", padding: 24}}>
-      <h1>Placement Preparation Tracker</h1>
-      <p>API status: {msg}</p>
-    </main>
+    <div className="flex items-center justify-center h-screen bg-gray-100">
+      <h1 className="text-3xl font-bold text-blue-600">
+        Hello Tailwind!
+      </h1>
+    </div>
   );
 }
 

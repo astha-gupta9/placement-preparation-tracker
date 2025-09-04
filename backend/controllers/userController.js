@@ -31,13 +31,13 @@ const updateUser = async (req, res, next) => {
             return next(new Error("User not found", 404));
         }
 
-        user.name = req.body.name || user.name;
+        user.username = req.body.username || user.username;
         user.email = req.body.email || user.email;
 
         const updatedUser = await user.save();
         return res.status(200).json({
             _id: updatedUser._id,
-            name: updatedUser.name,
+            username: updatedUser.username,
             email: updatedUser.email
         });
     } catch (err) {

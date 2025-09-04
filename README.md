@@ -42,3 +42,4 @@ A **full-stack web application** to track placement preparation progress. Built 
 - **Day 4**: Designed Problem model, implemented CRUD APIs with JWT protection, tested using Thunder Client (VS Code extension).
 - **Day 5**: Implemented Problem model, CRUD routes, controllers
 - **Day 6**: Added Problem stats API, error handling improvements, middleware refactor
+- **Day 7**: Setup frontend with React + Vite + Tailwind, created App layout for testing styles
