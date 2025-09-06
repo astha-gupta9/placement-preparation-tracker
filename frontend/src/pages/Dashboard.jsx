@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext";
-import axios from "axios";
+import api from "../utils/api";
 
 function Dashboard() {
   const { user, logout } = useAuth();
@@ -9,14 +8,7 @@ function Dashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await axios.get(
-          "http://localhost:5000/api/dashboard/stats",
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`
-            }
-          }
-        );
+        const res = await api.get("/dashboard/stats");
         setStats(res.data.stats);
       } catch (err) {
         console.error("Error fetching stats:", err);

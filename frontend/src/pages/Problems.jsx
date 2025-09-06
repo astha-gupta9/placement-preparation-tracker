@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { useAuth } from "../context/AuthContext";
+import api from "../utils/api";
 
 function Problems() {
     const { token } = useAuth();
     const [problems, setProblems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
     const [title, setTitle] = useState("");
     const [difficulty, setDifficulty] = useState("Easy");
@@ -13,20 +13,18 @@ function Problems() {
     const [tags, setTags] = useState("");
     const [editId, setEditId] = useState(null);
 
-    useEffect(() => {
-        const fetchProblems = async () => {
-            try {
-                const res = await axios.get("http://localhost:5000/api/problems", {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                setProblems(res.data.problems);
-            } catch (err) {
-                console.error(err.response?.data || err.message);
-            } finally {
-                setLoading(false);
-            }
-        };
+    const fetchProblems = async () => {
+        try {
+            const res = await api.get("/problems");
+            setProblems(res.data.problems);
+        } catch (err) {
+            console.error(err.response?.data?.message || "Failed to fetch problems");
+        } finally {
+            setLoading(false);
+        }
+    };
 
+    useEffect(() => {
         if (token) fetchProblems();
     }, [token]);
 
@@ -42,19 +40,17 @@ function Problems() {
         e.preventDefault();
         try {
             if (editId) {
-                const res = await axios.put(
-                    `http://localhost:5000/api/problems/${editId}`,
-                    { title, difficulty, status, tags: tags.split(",").map(t => t.trim()) },
-                    { headers: { Authorization: `Bearer ${token}`} }
+                const res = await api.put(
+                    `/problems/${editId}`,
+                    { title, difficulty, status, tags: tags.split(",").map(t => t.trim()) }
                 );
                 setProblems(
                     problems.map(p => (p._id === editId ? res.data.problem : p))
                 );
             } else {
-                const res = await axios.post(
-                    "http://localhost:5000/api/problems", 
-                    { title, difficulty, status, tags: tags.split(",").map(t => t.trim()) },
-                    { headers: { Authorization: `Bearer ${token}` } }
+                const res = await api.post(
+                    "/problems", 
+                    { title, difficulty, status, tags: tags.split(",").map(t => t.trim()) }
                 );
                 setProblems([res.data.problem, ...problems]);
             }
@@ -67,12 +63,10 @@ function Problems() {
     const handleDelete = async (id) => {
         if (!window.confirm("Are you sure you want to delete this problem?")) return;
         try {
-            await axios.delete(`http://localhost:5000/api/problems/${id}`, {
-                headers: { Authorization: `Bearer ${token}` }
-            });
+            await api.delete(`/problems/${id}`);
             setProblems(problems.filter(p => p._id !== id));
         } catch (err) {
-            alert(err.response?.data?.message || "Failed to delete problem");
+            setError(err.response?.data?.message || "Failed to delete problem");
         }
     };
 
@@ -84,42 +78,59 @@ function Problems() {
         setTags(p.tags.join(", "));
     };
 
-    if (loading) return <p>Loading problems...</p>;
+    if (loading) return <p className="text-gray-600">Loading problems...</p>;
+    if (error) return <p className="text-red-500">{error}</p>;
 
     return (
-        <div>
-            <h1>Your Problems</h1>
-            
-            <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
-                <input type="text" placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} required />
-                <select value={difficulty} onChange={e => setDifficulty(e.target.value)}>
-                    <option value="Easy">Easy</option>
-                    <option value="Medium">Medium</option>
-                    <option value="Hard">Hard</option>
-                </select>
-                <select value={status} onChange={e => setStatus(e.target.value)}>
-                    <option value="Not Started">Not Started</option>
-                    <option value="In Progress">In Progress</option>
-                    <option value="Solved">Solved</option>
-                </select>
-                <input type="text" placeholder="Tags (comma separated)" value={tags} onChange={e => setTags(e.target.value)} />
-                {editId && <button type="button" onClick={resetForm}>Cancel</button>}
+        <div className="space-y-6">
+            <h1 className="text-2xl font-bold text-gray-800">Problems</h1>
+            <form onSubmit={handleSubmit} className="bg-white p-6 rounded-xl shadow space-y-4">
+                <input type="text" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required className="w-full p-2 border rounded"/>
+                <div className="flex gap-4">
+                    <select value={difficulty} onChange={(e) => setDifficulty(e.target.value)} className="flex-1 p-2 border rounded">
+                        <option>Easy</option>
+                        <option>Medium</option>
+                        <option>Hard</option>
+                    </select>
+                    <select value={status} onChange={(e) => setStatus(e.target.value)} className="flex-1 p-2 border rounded">
+                        <option>Not Started</option>
+                        <option>In Progress</option>
+                        <option>Solved</option>
+                    </select>
+                </div>
+                <input type="text" placeholder="Tags (comma separated)" value={tags} onChange={(e) => setTags(e.target.value)} className="w-full p-2 border rounded"/>
+                <div className="flex gap-3">
+                    <button type="submit" className="px-4 py-2 bg-indigo-600 text-white rounded">{editId ? "Update Problem" : "Add Problem"}</button>
+                    {editId && (
+                        <button type="button" onClick={resetForm} className="px-4 py-2 bg-gray-300 rounded">Cancel</button>
+                    )}
+                </div>
             </form>
-            
+
             {problems.length === 0 ? (
-                <p>No problems added yet.</p>
+                <p className="text-gray-500">No problems added yet.</p>
             ) : (
-                <ul>
-                    {problems.map(p => (
-                        <li key={p._id}>
-                            <strong>{p.title}</strong> - {p.difficulty} ({p.status})
-                            {p.tags.length > 0 && <span> | Tags: {p.tags.join(", ")}</span>}
-                            {" "}
-                            <button onClick={() => handleEdit(p)}>Edit</button>
-                            <button onClick={() => handleDelete(p._id)}>Delete</button>
-                        </li>
+                <div className="grid gap-4">
+                    {problems.map((p) => (
+                        <div key={p._id} className="bg-white p-4 rounded-xl shadow flex justify-between items-center">
+                            <div>
+                                <h3 className="font-semibold text-gray-800">{p.title}</h3>
+                                <p className="text-sm text-gray-500">
+                                    Difficulty: {p.difficulty} | Status: {p.status}
+                                </p>
+                                {p.tags.length > 0 && (
+                                    <p className="text-xs text-gray-400">
+                                        Tags: {p.tags.join(", ")}
+                                    </p>
+                                )}
+                            </div>
+                            <div className="space-x-2">
+                                <button onClick={() => handleEdit(p)} className="px-3 py-1 bg-yellow-400 rounded">Edit</button>
+                                <button onClick={() => handleDelete(p._id)} className="px-3 py-1 bg-red-500 text-white rounded">Delete</button>
+                            </div>
+                        </div>
                     ))}
-                </ul>
+                </div>
             )}
         </div>
     );

@@ -29,8 +29,19 @@ A **full-stack web application** to track placement preparation progress. Built 
     │    └── .env (ignored in git)
     ├── frontend/
     │    ├── src/
+    |    |    ├── assets/
+    |    |    ├── components/
+    |    |    ├── context/
+    |    |    ├── pages/
+    |    |    └── utils/
     │    ├── public/
-    │    └── vite.config.js
+    │    ├── vite.config.js
+    │    ├── .gitignore
+    │    ├── eslint.config.js
+    │    ├── index.html
+    │    ├── postcss.config.js
+    │    ├── tailwind.config.js
+    │    └── README.md
     ├── README.md
     └── .gitignore
 
@@ -43,3 +54,5 @@ A **full-stack web application** to track placement preparation progress. Built 
 - **Day 5**: Implemented Problem model, CRUD routes, controllers
 - **Day 6**: Added Problem stats API, error handling improvements, middleware refactor
 - **Day 7**: Setup frontend with React + Vite + Tailwind, created App layout for testing styles
+- **Day 8**: Developed frontend authentication flow (Login/Register pages, AuthContext, PrivateRoute, Navbar, Layout integration)
+- **Day 9**: Implemented Problems UI with full CRUD (Add/Edit/Delete, filter-ready), integrated backend controller, improved API handling with axios instance

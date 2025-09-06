@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { useAuth } from "../context/AuthContext";
+import api from "../utils/api";
 import { useNavigate, Link } from "react-router-dom";
 
 function Register() {
@@ -13,7 +12,7 @@ function Register() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post("http://localhost:5000/api/auth/register", { username, email, password });
+            const res = await api.post("/auth/register", { username, email, password });
             
             console.log("Backend Response:", res.data);
             
