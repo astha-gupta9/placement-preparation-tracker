@@ -18,6 +18,9 @@ app.use("/api/auth", authRoutes);
 const userRoutes = require("./routes/userRoutes");
 app.use("/api/users", userRoutes);
 
+const dashboardRoutes = require("./routes/dashboardRoutes");
+app.use("/api/dashboard", dashboardRoutes);
+
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
 app.use(notFound);
 app.use(errorHandler);

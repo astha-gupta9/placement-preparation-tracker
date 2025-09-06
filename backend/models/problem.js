@@ -24,6 +24,9 @@ const problemSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
         required: true
+    },
+    solutionLink: {
+        type: String
     }
 },
 { timestamps: true }
